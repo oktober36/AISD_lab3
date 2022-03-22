@@ -2,10 +2,11 @@
 #define LAB3_DIALOG_H
 #include "table.h"
 
+int getInt();
+char *getStr();
+int getOption(int optionNum, char *msg, char *errMsg, char **options);
 
-extern void(*fptr[ ])(Table *);
 int dialog();
-int getInt(int *k);
 void DAdd(Table *table);
 void DFind(Table *table);
 void DDelete(Table *table);

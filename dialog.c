@@ -4,166 +4,177 @@
 #include "stdlib.h"
 #include "conio.h"
 
-const char *msgs[ ] = {"0. Quit", "1. Add","2. Find", "3. Delete", "4. Show", "5. Clear"};
-const char *findMsgs[ ] = {"1. Key 1","2. Key 2", "3. Range of key1"};
+const char *dialogMsgs[ ] = {"0. Quit", "1. Add","2. Find", "3. Delete", "4. Show"};
+const char *findMsgs[ ] = {"0. Back", "1. Key 1","2. Key 2",
+                           "3. Pair of keys", "4. Key 2 and release", "5. Range of key1"};
+const char *deleteMsgs[ ] = {"0. Back", "1. Key 1", "2. Key 2",
+                             "3. Pair of keys", "Key2 and release", "Delete old releases"};
 
-void (*fptr[ ])(Table *) = {NULL, DAdd, DFind, DDelete, DShow, DClear};
+void (*dialogFptr[ ])(Table *) = {NULL, DAdd, DFind, DDelete, DShow};
 
-int dialog()
-{
-    char *errmsg = "";
-    int rc;
-    int i;
+int getInt(){
+    int out, flag;
+    char *error;
+    error = "";
     do{
-        puts(errmsg);
-        errmsg = "You are wrong. Repeat, please!";
-        for(i = 0; i < 6; ++i)
-            puts(msgs[i]);
-        puts("Make your choice ");
-        if (!getInt(&rc))
-            continue;
-    } while(rc < 0 || rc >= 6);
-    return rc;
-}
-
-int getInt(int *k){
-    int out = 1;
-    if (!scanf("%I64d", k)){
-        out = 0;
-    }
-    fflush(stdin);
+        flag = 1;
+        puts(error);
+        error = "Please enter number";
+        if (!scanf("%d%*[ ]", &out))
+            flag = 0;
+        if (getchar() != '\n')
+            flag = 0;
+        fflush(stdin);
+    } while (!flag);
     return out;
 }
 
 char *getStr(){
-    char *s, *buf = (char *)calloc(sizeof (char), 11);
-    scanf("%10s", buf);
-    fflush(stdin);
+    char *s, *buf = (char *)calloc(sizeof (char), 256);
+    int flag;
+    char *error;
+    error = "";
+    do{
+        flag = 1;
+        puts(error);
+        error = "Please enter string without spaces";
+        if (!scanf("%s%*[ ]", buf))
+            flag = 0;
+        if (getchar() != '\n')
+            flag = 0;
+        fflush(stdin);
+    } while (!flag);
     s = (char *)calloc(sizeof (char), strlen(buf) + 1);
     strcpy(s, buf);
     free(buf);
+    buf = NULL;
     return s;
 }
 
-void DAdd(Table *table){
-    char *errmsg = "";
-    Item *item = (Item *) malloc(sizeof (Item));
+int getOption(int optionNum, char *msg, char *errMsg, char **options){
+    int rc, i;
+    char* error = "";
     do{
-        puts(errmsg);
-        errmsg = "You are wrong. Repeat, please!";
-        puts("Enter key1 ");
-    } while(!getInt(&(item->key1)));
-    puts("Enter key2 ");
-    item->key2 = getStr();
-    puts("Enter info ");
-    item->info = getStr();
-    if (!push(table, item))
+        puts(error);
+        error = errMsg;
+        for(i = 0; i < optionNum; ++i)
+            puts(options[i]);
+        puts(msg);
+        rc = getInt();
+    } while(rc < 0 || rc >= optionNum);
+    return rc;
+}
+
+int dialog(Table *table)
+{
+    int rc;
+    while ((rc = getOption(5, "Select the command",
+                           "Wrong command number, repeat", (char **) dialogMsgs)))
+        dialogFptr[rc](table);
+}
+
+void DAdd(Table *table){
+    char *key2, *info;
+    int key1;
+    key1 = getInt();
+    puts("Enter key2");
+    key2 = getStr();
+    puts("Enter info");
+    info = getStr();
+    if (!push(table, key1, key2, info))
         printf("Duplicate key1");
 }
 
 void DFind(Table *table){
-    int key1, i, type, a, b;
-    char *key2, *errmsg;
-    Item *item;
-    KeySpace1 **ks1;
-    KeySpace2 **ks2;
-    errmsg = "";
-    do{
-        puts(errmsg);
-        errmsg = "You are wrong. Repeat, please!";
-        for(i = 0; i < 3; ++i)
-            puts(findMsgs[i]);
-        puts("Make your choice ");
-        if (!getInt(&type))
-            continue;
-    } while(type < 1 || type > 3);
-    if (type == 1){
-        errmsg = "";
-        do{
-            puts(errmsg);
-            errmsg = "You are wrong. Repeat, please!";
-            puts("Enter key ");
-        } while(!getInt(&key1));
-        if (!(item = KS1search(table->ks1, key1))){
-            printf("Can't find item");
-            return;
-        }
-        printItem(item);
-    }
-    if (type == 2){
-        puts("Enter key ");
+    int key1, a, b, option;
+    char *key2;
+    option = getOption(6, "Select the search option",
+              "Wrong option number, repeat", (char **) findMsgs);
+    if (!option)
+        return;
+    if (option == 1){
+        puts("Enter the key1");
+        key1 = getInt();
+        if (!findByKey1(table, key1))
+            puts("Not found");
+    } else if (option == 2){
+        puts("Enter the key2");
         key2 = getStr();
-        if (!(ks2 = KS2search(table->ks2, key2))){
-            printf("Can't find items");
-            return;
-        }
+        if (!findByKey2(table, key2))
+            puts("Not found");
         free(key2);
-        KS2print(ks2);
-    }
-    if (type == 3){
-        errmsg = "";
-        do{
-            puts(errmsg);
-            errmsg = "You are wrong. Repeat, please!";
-            puts("Enter left board ");
-        } while(!getInt(&a));
-        errmsg = "";
-        do{
-            puts(errmsg);
-            errmsg = "You are wrong. Repeat, please!";
-            puts("Enter right board ");
-        } while(!getInt(&b));
-        if (!(ks1 = KS1searchRange(table->ks1, a, b))){
-            printf("Can't find items");
-            return;
+    } else if (option == 3){
+        puts("Enter the key1");
+        key1 = getInt();
+        puts("Enter the key2");
+        key2 = getStr();
+        if (!findByPair(table, key1, key2))
+            puts("Not found");
+        free(key2);
+    } else if (option == 4){
+        puts("Enter the key2");
+        key2 = getStr();
+        puts("Enter the release");
+        a = getInt();
+        if (!findByRelease(table, key2, a))
+            puts("Not found");
+        free(key2);
+    } else if (option == 5){
+        puts("Enter the left board");
+        a = getInt();
+        puts("Enter the right board");
+        b = getInt();
+        if (!findByRange(table, a, b)){
+            puts("Not found");
         }
-        KS1print(ks1);
     }
 }
 
 void DDelete(Table *table){
-    int key1, type;
-    char *errmsg = "", *key2;
-    do{
-        puts(errmsg);
-        errmsg = "You are wrong. Repeat, please!";
-        puts("Enter type of key ");
-        if (!getInt(&type))
-            continue;
-    } while(type < 1 || type > 2);
-    if (type == 1){
-        errmsg = "";
-        do{
-            puts(errmsg);
-            errmsg = "You are wrong. Repeat, please!";
-            puts("Enter key ");
-        } while(!getInt(&key1));
-        if (!(deleteByKey1(table, key1))){
-            printf("No such key");
-            return;
-        }
-    }
-    if (type == 2){
-        puts("Enter key ");
+    int key1, option, release;
+    char *key2;
+    option = getOption(6, "Select the search option",
+                       "Wrong option number, repeat", (char **) findMsgs);
+    if (!option)
+        return;
+    if (option == 1){
+        puts("Enter the key1");
+        key1 = getInt();
+        if (!deleteByKey1(table, key1))
+            puts("Not found");
+    } else if (option == 2){
+        puts("Enter the key2");
         key2 = getStr();
-        if (!(deleteByKey2(table, key2))) {
-            printf("No such key");
-        }
+        if (!deleteByKey2(table, key2))
+            puts("Not found");
+        free(key2);
+    } else if (option == 3){
+        puts("Enter the key1");
+        key1 = getInt();
+        puts("Enter the key2");
+        key2 = getStr();
+        if (!deleteByPair(table, key1, key2))
+            puts("Not found");
+        free(key2);
+    } else if (option == 4){
+        puts("Enter the key2");
+        key2 = getStr();
+        puts("Enter the release");
+        release = getInt();
+        if (!deleteByRelease(table, key2, release))
+            puts("Not found");
+        free(key2);
+    } else if (option == 5){
+        puts("Enter the key2");
+        key2 = getStr();
+        if (!clear(table, key2))
+            puts("Not found");
         free(key2);
     }
 }
+
 void DShow(Table *table){
     KS1print(table->ks1);
-}
-
-void DClear(Table *table){
-    char *key2;
-    puts("Enter key 2");
-    key2 = getStr();
-    if (!(clear(table, key2))) {
-        printf("Table needn't clear");
-    }
-    free(key2);
 }
 
 

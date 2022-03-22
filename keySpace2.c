@@ -129,21 +129,3 @@ int KS2findRelease(KeySpace2 **tab, char *key){
     }
     return 0;
 }
-
-int KS2clear(KeySpace2 **tab, char *key){
-    int i, release = KS2findRelease(tab, key);
-    KeySpace2 **cur = &(tab[hash(key)]);
-    int deleted = 0;
-
-    while (*cur) {
-        if (!(strcmp((*cur)->key, key)) && (*cur)->release < release) {
-            KeySpace2 *buf = (*cur);
-            *cur = buf->next;
-            free(buf);
-            deleted += 1;
-        }
-        else{
-            cur = &((*cur)->next);
-        }
-    }
-}

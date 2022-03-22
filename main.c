@@ -4,13 +4,11 @@
 int main(){
     Table *table;
     table = initTable();
-    /*int rc;
-    while(rc = dialog())
-        fptr[rc](table);
+    dialog();
     printf("That's all. Bye!\n");
-    return 0;*/
+    return 0;
 
-    Item item1 = {"123", 1, "32", NULL, NULL};
+    /*Item item1 = {"123", 1, "32", NULL, NULL};
     Item item2 = {"123", 2, "32", NULL, NULL};
     Item item3 = {"123", 3, "32", NULL, NULL};
     push(table, &item1);
@@ -18,6 +16,6 @@ int main(){
     push(table, &item3);
     clear(table, "32");
 
-    DShow(table);
+    DShow(table);*/
 
 }
