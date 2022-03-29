@@ -7,9 +7,7 @@
 typedef struct Table {
     KeySpace1 **ks1;
     KeySpace2 **ks2;
-    int msize2;
-    int csize1;
-    int csize2;
+    int csize;
 } Table;
 
 Table *initTable();

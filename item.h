@@ -5,6 +5,7 @@
 typedef struct Item{
     int key1;
     char *key2;
+    int release;
     char *info;
 } Item;
 

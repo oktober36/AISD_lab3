@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char *saveFile = "C:/AISD/lab3/keys1.bin";
+const char *KS1saveFile = "C:/AISD/lab3/keys1.bin";
 
-void freeNode(KeySpace1 *node){
+void KS1freeNode(KeySpace1 *node){
     node->key = 0;
     node->offset = 0;
     node->len = 0;
@@ -18,7 +18,7 @@ int KS1init(KeySpace1 ***tab) {
     if (!(*tab = (KeySpace1 **) malloc(sizeof(KeySpace1*))))
         return 0;
     **tab = NULL;
-    if ((fd = fopen(saveFile, "rb"))) {
+    if ((fd = fopen(KS1saveFile, "rb"))) {
         fread(&n, sizeof(int), 1, fd);
         while(--n >= 0) {
             KeySpace1 *cur = (KeySpace1 *) calloc(1, sizeof(KeySpace1));
@@ -27,8 +27,8 @@ int KS1init(KeySpace1 ***tab) {
             fread(&cur->key, sizeof(int), 1, fd);
             fread(&cur->offset, sizeof(int), 1, fd);
             fread(&cur->len, sizeof(int), 1, fd);
-            **tab = cur;
             cur->next = **tab;
+            **tab = cur;
         }
     }
     return 1;
@@ -36,8 +36,6 @@ int KS1init(KeySpace1 ***tab) {
 
 int KS1push(KeySpace1 **tab, int key, int offset, int len) {
     KeySpace1 *new;
-    if (KS1search(tab, key))
-        return 0;
     new = (KeySpace1 *) malloc(sizeof(KeySpace1));
     if (!new)
         return 0;
@@ -50,32 +48,41 @@ int KS1push(KeySpace1 **tab, int key, int offset, int len) {
 }
 
 Item *KS1search(KeySpace1 **tab, int key) {
-    KeySpace1 *buf = *tab;
+    KeySpace1 **cur = tab;
 
-    for (; buf != NULL; buf = buf->next) {
-        if (key == buf->key)
-            return readItem(buf->offset, buf->len);
+    for (; (*cur) != NULL; cur = & (*cur)->next) {
+        if (key == (*cur)->key)
+            return readItem((*cur)->offset, (*cur)->len);
     }
     return NULL;
 }
 
+int KS1find(KeySpace1 **tab, int key) {
+    KeySpace1 **cur = tab;
+
+    for (; (*cur) != NULL; cur = & (*cur)->next) {
+        if (key == (*cur)->key)
+            return 1;
+    }
+    return 0;
+}
+
 KeySpace1 **KS1searchRange(KeySpace1 **tab, int a, int b) {
     KeySpace1 **out = NULL;
-    KeySpace1 *buf = *tab;
+    KeySpace1 **cur = tab;
 
     if (a > b)
         return NULL;
-    for (; buf; buf = buf->next) {
-        if (buf->key >= a && buf->key <= b)
+    for (; (*cur); cur = & (*cur)->next) {
+        if ((*cur)->key >= a && (*cur)->key <= b)
             if (!out){
                 if (!(out = (KeySpace1 **) malloc(sizeof (KeySpace1*)))){
                     KS1free(out);
                     return NULL;
                 }
-
                 *out = NULL;
             }
-            KS1push(out, buf->key, buf->offset, buf->len);
+            KS1push(out, (*cur)->key, (*cur)->offset, (*cur)->len);
     }
     return out;
 }
@@ -86,8 +93,9 @@ int KS1delete(KeySpace1 **tab, int key) {
     for (; *cur; cur = &((*cur)->next)) {
         if ((*cur)->key == key) {
             KeySpace1 *buf = (*cur);
-            *cur = buf->next;
-            freeNode(buf);
+            *cur = buf -> next;
+            KS1freeNode(buf);
+            buf = NULL;
             return 1;
         }
     }
@@ -95,10 +103,11 @@ int KS1delete(KeySpace1 **tab, int key) {
 }
 
 void KS1print(KeySpace1 **tab) {
-    KeySpace1 *cur = *tab;
-    for (; cur; cur = cur->next){
-        Item *item = readItem(cur->offset, cur->len);
-        printf("%d, %s: %s\n", item->key1, item->key2, item->info);
+    KeySpace1 **cur = tab;
+
+    for (; (*cur); cur = & (*cur)->next){
+        Item *item = readItem((*cur)->offset, (*cur)->len);
+        printf("%d, %s(%d): %s\n", item->key1, item->key2, item->release, item->info);
     }
 }
 
@@ -106,8 +115,8 @@ void KS1free(KeySpace1 **tab) {
     KeySpace1 *cur = *tab;
     while (cur) {
         KeySpace1 *buf = cur;
-        cur = buf->next;
-        freeNode(buf);
+        cur = (buf)->next;
+        KS1freeNode((buf));
         buf = NULL;
     }
     free(tab);
@@ -116,11 +125,20 @@ void KS1free(KeySpace1 **tab) {
 void KS1save(KeySpace1 **tab, int size) {
     FILE *fd;
 
-    if ((fd = fopen(saveFile, "wb"))) {
-
+    if ((fd = fopen(KS1saveFile, "wb"))) {
+        fwrite(&size, sizeof (int), 1, fd);
+        KeySpace1 *cur = *tab;
+        while(cur){
+            fwrite(&(cur->key), sizeof (KeySpace1), 1, fd);
+            fwrite(&(cur->offset), sizeof (KeySpace1), 1, fd);
+            fwrite(&(cur->len), sizeof (KeySpace1), 1, fd);
+            cur = cur->next;
+        }
     } else {
-        puts("Ошибка в сохранении 1 пространства");
+        puts("KeySpace 1 saving error");
+        exit(EXIT_FAILURE);
     }
+    fclose(fd);
 }
 
 

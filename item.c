@@ -25,8 +25,10 @@ int writeItem(Item *item){
     key2size = strlen(item->key2) + 1;
     fwrite(&key2size, sizeof (int), 1, fd);
     fwrite(item->key2, sizeof (char), key2size, fd);
+    fwrite(&item->release, sizeof (int), 1, fd);
     fwrite(item->info, sizeof (char), strlen(item->info) + 1, fd);
     fclose(fd);
+    freeItem(item);
     return offset;
 }
 
@@ -43,26 +45,9 @@ Item *readItem(int offset, int len){
     fread(&key2len, sizeof (int), 1, fd);
     item->key2 = (char *) malloc(key2len);
     fread(item->key2, sizeof (char ), key2len, fd);
+    fread(&item->release, sizeof (int), 1, fd);
     item->info = (char *) malloc(len);
     fread(item->info, sizeof (char), len, fd);
     fclose(fd);
     return item;
 }
-
-/*void deleteItem(int offset, int len){
-    int i;
-    FILE *fd;
-    int fSize;
-    char buf;
-
-    fd = fopen(values, "r+b");
-    fseek(fd, 0, SEEK_END);
-    fSize = ftell(fd);
-    for (fseek(fd, offset, SEEK_SET); ftell(fd) < fSize; fseek(fd, 1, SEEK_CUR)){
-        fseek(fd, 1, SEEK_CUR);
-        fread(&buf, sizeof (char), 1, fd);
-        fseek(fd, -1, SEEK_CUR);
-        fwrite(&buf, sizeof (char), 1, fd);
-    }
-    fclose(fd);
-}*/

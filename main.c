@@ -1,22 +1,20 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "dialog.h"
 
 
-int main(){
-    /*Table *table;
-    table = initTable();
-    dialog();
-    printf("That's all. Bye!\n");
-    return 0;
-    */
-    Item item1 = {123, "1", "2"};
-    Item item2 = {123, "2", "3412"};
-//    Item item3 = {123, "3", "2"};
-    writeItem(&item1);
-    int a = writeItem(&item2);
-
-    readItem(0, 2);
-    readItem(a, 5);
-    deleteItem(0, 2);
-    readItem(0, 5);
+main(){
+    Table *table;
+    int msize2;
+    puts("Enter size of keyspace 2");
+    msize2 = getInt();
+    if (!(table = initTable(msize2))){
+        puts("Error");
+        return 1;
+    }
+    dialog(table);
+    KS1save(table->ks1, table -> csize);
+    KS2save(table->ks2, table -> csize);
     return 0;
 }
