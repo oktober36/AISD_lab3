@@ -2,6 +2,8 @@
 #ifndef LAB3_ITEM_H
 #define LAB3_ITEM_H
 
+extern char *values;
+
 typedef struct Item{
     int key1;
     char *key2;

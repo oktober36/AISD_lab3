@@ -3,6 +3,8 @@
 #ifndef LAB3_KEYSPACE1_H
 #define LAB3_KEYSPACE1_H
 
+extern char *KS1saveFile;
+
 typedef struct KeySpace1 {
     int key;
     int offset;

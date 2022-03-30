@@ -3,7 +3,7 @@
 
 #include "item.h"
 extern int M2_SIZE;
-
+extern char *KS2saveFile;
 
 typedef struct KeySpace2 {
     char *key;

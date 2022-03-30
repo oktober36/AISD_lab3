@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-const char *values = "C:/AISD/lab3/values.bin";
+char *values;
 
 void freeItem(Item *item){
     free(item->info);
@@ -35,7 +35,6 @@ int writeItem(Item *item){
 
 Item *readItem(int offset, int len){
     FILE *fd;
-    char *str;
     int key2len;
     Item *item = (Item *) malloc(sizeof (Item));
 

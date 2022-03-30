@@ -4,7 +4,7 @@
 #include "string.h"
 
 int M2_SIZE;
-const char *KS2saveFile = "C:/AISD/lab3/keys2.bin";
+char *KS2saveFile;
 
 int hash(char *key) {
     unsigned int hash = 2139062143;

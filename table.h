@@ -10,6 +10,7 @@ typedef struct Table {
     int csize;
 } Table;
 
+void setFileNames(char *name);
 Table *initTable();
 
 int push(Table *tab, int key1, char *key2, char *info);

@@ -2,6 +2,17 @@
 #include "stdlib.h"
 #include "string.h"
 
+void setFileNames(char *name){
+    int len;
+    len = (int) strlen(name);
+    KS1saveFile = calloc(24 + len, sizeof (char ));
+    sprintf(KS1saveFile, "C:/AISD/lab3/%s.keys1.bin", name);
+    KS2saveFile =calloc(24 + len, sizeof (char ));
+    sprintf(KS2saveFile, "C:/AISD/lab3/%s.keys2.bin", name);
+    values = calloc(25 + len, sizeof (char ));
+    sprintf(values, "C:/AISD/lab3/%s.values.bin", name);
+}
+
 Table *initTable(int msize2){
     Table *table;
     table = (Table *)malloc(sizeof (Table));

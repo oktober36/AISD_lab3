@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const char *KS1saveFile = "C:/AISD/lab3/keys1.bin";
+char *KS1saveFile;
 
 void KS1freeNode(KeySpace1 *node){
     node->key = 0;
